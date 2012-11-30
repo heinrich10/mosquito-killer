@@ -84,6 +84,11 @@ public class GameCanvas extends Canvas {
 		// TODO Auto-generated method stub
 		container.setTitle(title);
 	}
-
+	
+	public void waitForKeyPress(){
+		g.setColor(Color.white);
+//		g.drawString(message,(800-g.getFontMetrics().stringWidth(message))/2,250);
+		g.drawString("Press any key",(800-g.getFontMetrics().stringWidth("Press any key"))/2,300);
+	}
 	
 }
