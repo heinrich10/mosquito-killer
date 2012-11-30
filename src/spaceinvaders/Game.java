@@ -194,7 +194,7 @@ public class Game {
 		// if we waited long enough, create the shot entity, and record the time.
 		lastFire = System.currentTimeMillis();
 		ShotEntity shot = new ShotEntity(this,"sprites/shot.gif",ship.getX()+10,ship.getY()-30);
-		
+		ship.setFire();
 		
 		entities.add(shot);
 	}
@@ -423,10 +423,10 @@ public class Game {
 		
 		// if we're pressing fire, attempt to fire
 		if (kih.firePressed()) {
-			
-			
 			tryToFire();
 			
+		}else{
+			ship.setStand();
 		}
 	}
 
