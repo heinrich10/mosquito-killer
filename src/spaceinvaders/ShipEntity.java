@@ -62,6 +62,13 @@ public class ShipEntity extends Entity {
 		}
 	}
 	
+	public void setFire(){
+		sprite = frames[1];
+	}
+	
+	public void setStand(){
+		sprite = frames[0];
+	}
 	public void change(){
 		if(change){
 			sprite = frames[0];
