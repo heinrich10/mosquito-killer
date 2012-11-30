@@ -8,7 +8,7 @@ public class KeyInputHandler extends java.awt.event.KeyAdapter {
 	 * @param args
 	 */
 	
-	private boolean keyPressed = false;
+	private boolean pause = true;
 	
 	/**
 	 * Notification from AWT that a key has been pressed. Note that
@@ -76,7 +76,7 @@ public class KeyInputHandler extends java.awt.event.KeyAdapter {
 		// the shoot or move keys, hence the use of the "pressCount"
 		// counter.
 		//if (waitingForKeyPress) {
-			keyPressed = true;
+			pause = false;
 		// if we hit escape, then quit the game
 		if (e.getKeyChar() == 27) {
 			System.exit(0);
@@ -95,12 +95,12 @@ public class KeyInputHandler extends java.awt.event.KeyAdapter {
 		return firePressed;
 	}
 	
-	public boolean keyPressed(){
-		return keyPressed;
+	public boolean gamePaused(){
+		return pause;
 	}
 	
-	public void resetKey(){
-		keyPressed = false;
+	public void pauseGame(){
+		pause = true;
 	}
 	
 }

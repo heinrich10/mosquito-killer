@@ -42,7 +42,7 @@ public class Game {
 	/** The list of entities that need to be removed from the game this loop */
 	private ArrayList removeList = new ArrayList();
 	/** The entity representing the player */
-	private Entity ship;
+	private ShipEntity ship;
 	/** The speed at which the player's ship should move (pixels/sec) */
 	private double moveSpeed = 300;
 	/** The time at which last fired a shot */
@@ -53,7 +53,7 @@ public class Game {
 	private int alienCount = 0;
 	
 	/** The message to display which waiting for a key press */
-	private String message = "";
+	
 	/** True if we're holding up game play until a key has been pressed */
 	private boolean waitingForKeyPress = true;
 	/** True if game logic needs to be applied this loop, normally as a result of a game event */
@@ -102,7 +102,8 @@ public class Game {
 	 */
 	private void initEntities() {
 		// create the player ship and place it roughly in the center of the screen
-		ship = new ShipEntity(this,"sprites/ship.gif",370,550);
+		entities.clear();
+		ship = new ShipEntity(this,"sprites/rockman2.png",370,550);
 		entities.add(ship);
 		alienCount = 0;
 		//test
@@ -143,8 +144,8 @@ public class Game {
 	 * Notification that the player has died. 
 	 */
 	public void notifyDeath() {
-		message = "Oh no! They got you, try again?";
-		waitingForKeyPress = true;
+		gc.setMessage("Oh no! They got you, try again?");
+		kih.pauseGame();
 	}
 	
 	/**
@@ -152,8 +153,8 @@ public class Game {
 	 * are dead.
 	 */
 	public void notifyWin() {
-		message = "Well done! You Win!";
-		waitingForKeyPress = true;
+		gc.setMessage("Well done! You Win!");
+		kih.pauseGame();
 	}
 	
 	/**
@@ -194,6 +195,7 @@ public class Game {
 		lastFire = System.currentTimeMillis();
 		ShotEntity shot = new ShotEntity(this,"sprites/shot.gif",ship.getX()+10,ship.getY()-30);
 		
+		
 		entities.add(shot);
 	}
 	
@@ -212,7 +214,8 @@ public class Game {
 		long lastLoopTime = SystemTimer.getTime();
 	
 		int count1 = 0;
-		Entity stationary = null;
+		
+		//Entity stationary = null;
 		
 		//stationary = new AlienEntity(this, 150, 250);
 		//entities.add(stationary);
@@ -244,94 +247,139 @@ public class Game {
 			//temp declare
 			Entity alien = null;
 			
-			long delta = SystemTimer.getTime() - lastLoopTime;
-			lastLoopTime = SystemTimer.getTime();
-
-			// update the frame counter
-			lastFpsTime += delta;
-			fps++;
+			
 			
 			// update our FPS counter if a second has passed since
 			// we last recorded
-			if (lastFpsTime >= 1000) {
-				String title = windowTitle+" (FPS: "+fps+")";
-				gc.setTitle(title);
-				lastFpsTime = 0;
-				fps = 0;
-				
-				//test alien
-				Random num = new Random();
-				num.nextInt(761);
-	
-				if(alienCount < 2){
-					alien = new AlienEntity(this, num.nextInt(761), num.nextInt(300));
-					entities.add(alien);
-					alienCount++;
-				}
-			}
+			
 			
 			// Get hold of a graphics context for the accelerated 
 			// surface and blank it out
 			//make into function
-			gc.updateGraphics();
+			
 			//Graphics2D g = (Graphics2D) strategy.getDrawGraphics();
 			//g.setColor(Color.black);
 			//g.fillRect(0,0,800,800);
 			
+			//waitingForKeyPress = kih.keyPressed();
+			
+			gc.updateGraphics();
+			
 			// cycle round asking each entity to move itself
-			if (!waitingForKeyPress) {
+			if (!kih.gamePaused()) {
+				
+				long delta = SystemTimer.getTime() - lastLoopTime;
+				lastLoopTime = SystemTimer.getTime();
+
+				// update the frame counter
+				lastFpsTime += delta;
+				fps++;
+				
+				if (lastFpsTime >= 1000) {
+					String title = windowTitle+" (FPS: "+fps+")";
+					gc.setTitle(title);
+					lastFpsTime = 0;
+					fps = 0;
+					
+					
+					//test alien
+					Random num = new Random();
+					num.nextInt(761);
+		
+					if(alienCount < 2){
+						alien = new AlienEntity(this, num.nextInt(761), num.nextInt(300));
+						entities.add(alien);
+						alienCount++;
+						//System.out.println("alien count: " + alienCount);
+					}
+					
+				}
+				
+				
+				
+				
+				
 				for (int i=0;i<entities.size();i++) {
 					Entity entity = (Entity) entities.get(i);
 					
 					entity.move(delta);
 				}
+				
+				for (int i=0;i<entities.size();i++) {
+					Entity entity = (Entity) entities.get(i);
+					gc.draw(entity);
+					//entity.draw(g);
+				}
+				
+				for (int p=0;p<entities.size();p++) {
+					for (int s=p+1;s<entities.size();s++) {
+						Entity me = (Entity) entities.get(p);
+						Entity him = (Entity) entities.get(s);
+						
+						if (me.collidesWith(him)) {
+							me.collidedWith(him);
+							him.collidedWith(me);
+						}
+					}
+				}
+				
+				entities.removeAll(removeList);
+				removeList.clear();
+
+				// if a game event has indicated that game logic should
+				// be resolved, cycle round every entity requesting that
+				// their personal logic should be considered.
+				if (logicRequiredThisLoop) {
+					for (int i=0;i<entities.size();i++) {
+						Entity entity = (Entity) entities.get(i);
+						entity.doLogic();
+					}
+					
+					logicRequiredThisLoop = false;
+				}
+				
+				for (int i=0;i<entities.size();i++) {
+					Entity entity = (Entity) entities.get(i);
+					
+					if (entity instanceof AlienEntity) {
+						entity.setVerticalMovement(50);
+						entity.setHorizontalMovement(0);
+						//entity.setHorizontalMovement(entity.getHorizontalMovement() * 1.02);
+					}
+				}
+				
+				ship.setHorizontalMovement(0);
+				
+				
+				//get controls from KeyInputHandler
+				movementControls();
+				
+				
+				// we want each frame to take 10 milliseconds, to do this
+				// we've recorded when we started the frame. We add 10 milliseconds
+				// to this and then factor in the current time to give 
+				// us our final value to wait for
+				SystemTimer.sleep(lastLoopTime+10-SystemTimer.getTime());
+				
+			} else {
+				gc.waitForKeyPress();
+				this.initEntities();
 			}
 			
 			// cycle round drawing all the entities we have in the game
-			for (int i=0;i<entities.size();i++) {
-				Entity entity = (Entity) entities.get(i);
-				gc.draw(entity);
-				//entity.draw(g);
-			}
+			
 			
 			// brute force collisions, compare every entity against
 			// every other entity. If any of them collide notify 
 			// both entities that the collision has occured
-			for (int p=0;p<entities.size();p++) {
-				for (int s=p+1;s<entities.size();s++) {
-					Entity me = (Entity) entities.get(p);
-					Entity him = (Entity) entities.get(s);
-					
-					if (me.collidesWith(him)) {
-						me.collidedWith(him);
-						him.collidedWith(me);
-					}
-				}
-			}
+			
 			
 			// remove any entity that has been marked for clear up
-			entities.removeAll(removeList);
-			removeList.clear();
-
-			// if a game event has indicated that game logic should
-			// be resolved, cycle round every entity requesting that
-			// their personal logic should be considered.
-			if (logicRequiredThisLoop) {
-				for (int i=0;i<entities.size();i++) {
-					Entity entity = (Entity) entities.get(i);
-					entity.doLogic();
-				}
-				
-				logicRequiredThisLoop = false;
-			}
+			
 			
 			// if we're waiting for an "any key" press then draw the 
 			// current message 
-			if (waitingForKeyPress) {
-		//		g.setColor(Color.white);
-		//		g.drawString(message,(800-g.getFontMetrics().stringWidth(message))/2,250);
-		//		g.drawString("Press any key",(800-g.getFontMetrics().stringWidth("Press any key"))/2,300);
-			}
+			
 			
 			// finally, we've completed drawing so clear up the graphics
 			// and flip the buffer over
@@ -347,31 +395,20 @@ public class Game {
 			
 			
 			
-			for (int i=0;i<entities.size();i++) {
-				Entity entity = (Entity) entities.get(i);
-				
-				if (entity instanceof AlienEntity) {
-					entity.setVerticalMovement(50);
-					entity.setHorizontalMovement(0);
-					//entity.setHorizontalMovement(entity.getHorizontalMovement() * 1.02);
-				}
-			}
-			
-			ship.setHorizontalMovement(0);
 			
 			
-			//get controls from KeyInputHandler
-			movementControls();
 			
-			
-			// we want each frame to take 10 milliseconds, to do this
-			// we've recorded when we started the frame. We add 10 milliseconds
-			// to this and then factor in the current time to give 
-			// us our final value to wait for
-			SystemTimer.sleep(lastLoopTime+10-SystemTimer.getTime());
 		}
 	}
 	
+	private void reinit() {
+		// TODO Auto-generated method stub
+		entities.clear();
+		ship = new ShipEntity(this,"sprites/ship.gif",370,550);
+		entities.add(ship);
+		
+	}
+
 	private void movementControls() {
 		// TODO Auto-generated method stub
 		if ((kih.leftPressed()) && (!kih.rightPressed())) {
@@ -386,7 +423,10 @@ public class Game {
 		
 		// if we're pressing fire, attempt to fire
 		if (kih.firePressed()) {
+			
+			
 			tryToFire();
+			
 		}
 	}
 

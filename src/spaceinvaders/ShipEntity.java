@@ -8,7 +8,8 @@ package spaceinvaders;
 public class ShipEntity extends Entity {
 	/** The game in which the ship exists */
 	private Game game;
-	
+	private boolean change = true;
+	private Sprite[] frames = new Sprite[2];
 	/**
 	 * Create a new entity to represent the players ship
 	 *  
@@ -19,6 +20,10 @@ public class ShipEntity extends Entity {
 	 */
 	public ShipEntity(Game game,String ref,int x,int y) {
 		super(ref,x,y);
+		
+		frames[0] = SpriteStore.get().getSprite("sprites/rockman2.png");;
+		frames[1] = SpriteStore.get().getSprite("sprites/rockman1.jpg");
+		
 		
 		this.game = game;
 	}
@@ -55,5 +60,16 @@ public class ShipEntity extends Entity {
 		if (other instanceof AlienEntity) {
 			game.notifyDeath();
 		}
+	}
+	
+	public void change(){
+		if(change){
+			sprite = frames[0];
+		} else {
+			sprite = frames[1];
+		}
+		
+		change = !change;
+		
 	}
 }

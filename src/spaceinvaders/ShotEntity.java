@@ -33,9 +33,9 @@ public class ShotEntity extends Entity {
 		
 		dy = moveSpeed;
 		
-		CalculationHelper test = new CalculationHelper();
-		long testt = (long) moveSpeed;
-		dx = moveSpeed;
+		//CalculationHelper test = new CalculationHelper();
+		//long testt = (long) moveSpeed;
+		//dx = moveSpeed;
 		
 	}
 
