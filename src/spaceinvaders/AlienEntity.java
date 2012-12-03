@@ -19,6 +19,8 @@ public class AlienEntity extends Entity {
 	/** The current frame of animation being displayed */
 	private int frameNumber;
 	
+	boolean change = true;
+	
 	/**
 	 * Create a new alien entity
 	 * 
@@ -29,11 +31,14 @@ public class AlienEntity extends Entity {
 	public AlienEntity(Game game,int x,int y) {
 		super("sprites/alien.gif",x,y);
 		
+		frames[0] = SpriteStore.get().getSprite("sprites/alien2.gif");
+		frames[1] = SpriteStore.get().getSprite("sprites/alien3.gif");
+		
 		// setup the animatin frames
-		frames[0] = sprite;
-		frames[1] = SpriteStore.get().getSprite("sprites/alien2.gif");
-		frames[2] = sprite;
-		frames[3] = SpriteStore.get().getSprite("sprites/alien3.gif");
+		//frames[0] = sprite;
+		//frames[1] = SpriteStore.get().getSprite("sprites/alien2.gif");
+		//frames[2] = sprite;
+		//frames[3] = SpriteStore.get().getSprite("sprites/alien3.gif");
 		
 		this.game = game;
 		dx = -moveSpeed;
@@ -62,7 +67,7 @@ public class AlienEntity extends Entity {
 				frameNumber = 0;
 			}
 			
-			sprite = frames[frameNumber];
+		
 		}
 		
 		// if we have reached the left hand side of the screen and
@@ -78,6 +83,18 @@ public class AlienEntity extends Entity {
 		
 		// proceed with normal move
 		super.move(delta);
+		
+		if(change){
+			sprite = frames[0];
+		} else {
+			sprite = frames[1];
+		}
+		change = !change;
+		
+		if (y > 700) {
+			
+			game.mosquitoBreach(this);
+		}
 	}
 	
 	/**
