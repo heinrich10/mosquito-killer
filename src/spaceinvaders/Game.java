@@ -52,6 +52,10 @@ public class Game {
 	/** The number of aliens left on the screen */
 	private int alienCount = 0;
 	
+	private int playerLife = 20;
+	
+	private int mosquitoKills = 0;
+	
 	/** The message to display which waiting for a key press */
 	
 	/** True if we're holding up game play until a key has been pressed */
@@ -106,19 +110,7 @@ public class Game {
 		ship = new ShipEntity(this,"sprites/rockman2.png",370,550);
 		entities.add(ship);
 		alienCount = 0;
-		//test
-		//Entity alien = new AlienEntity(this, 100, 50);
-		//entities.add(alien);
-		//alienCount++;
-		// create a block of aliens (5 rows, by 12 aliens, spaced evenly)
-		//alienCount = 0;
-		//for (int row=0;row<5;row++) {
-		//	for (int x=0;x<12;x++) {
-		//		Entity alien = new AlienEntity(this,100+(x*50),(50)+row*30);
-		//		entities.add(alien);
-		//		alienCount++;
-		//	}
-		//}
+		
 	}
 	
 	/**
@@ -163,20 +155,30 @@ public class Game {
 	public void notifyAlienKilled() {
 		// reduce the alient count, if there are none left, the player has won!
 		alienCount--;
-		
+		mosquitoKills++;
 		if (alienCount == 0) {
 			notifyWin();
 		}
 		
 		// if there are still some aliens left then they all need to get faster, so
 		// speed up all the existing aliens
-		for (int i=0;i<entities.size();i++) {
-			Entity entity = (Entity) entities.get(i);
+		//for (int i=0;i<entities.size();i++) {
+		//	Entity entity = (Entity) entities.get(i);
 			
-			if (entity instanceof AlienEntity) {
+		//	if (entity instanceof AlienEntity) {
 				// speed up by 2%
-				entity.setHorizontalMovement(entity.getHorizontalMovement() * 1.02);
-			}
+		//		entity.setHorizontalMovement(entity.getHorizontalMovement() * 1.02);
+		//	}
+		//}
+	}
+	
+	public void mosquitoBreach(Entity entity){
+		alienCount--;
+		playerLife--;
+		
+		removeEntity(entity);
+		if(playerLife == 0){
+			this.notifyDeath();
 		}
 	}
 	
@@ -193,7 +195,7 @@ public class Game {
 		
 		// if we waited long enough, create the shot entity, and record the time.
 		lastFire = System.currentTimeMillis();
-		ShotEntity shot = new ShotEntity(this,"sprites/shot.gif",ship.getX()+10,ship.getY()-30);
+		ShotEntity shot = new ShotEntity(this,"sprites/shot.gif",ship.getX()+40,ship.getY()-30);
 		ship.setFire();
 		
 		entities.add(shot);
@@ -213,32 +215,6 @@ public class Game {
 	public void gameLoop() {
 		long lastLoopTime = SystemTimer.getTime();
 	
-		int count1 = 0;
-		
-		//Entity stationary = null;
-		
-		//stationary = new AlienEntity(this, 150, 250);
-		//entities.add(stationary);
-		//stationary = new AlienEntity(this, 193, 250);
-		//entities.add(stationary);
-		//stationary = new AlienEntity(this, 150, 279);
-		//entities.add(stationary);
-		//stationary = new AlienEntity(this, 193, 279);
-		//entities.add(stationary);
-		
-		//test
-		
-		
-
-		//stationary = new AlienEntity(this, 570, 130);
-		//entities.add(stationary);
-		//stationary = new AlienEntity(this, 613, 130);
-		//entities.add(stationary);
-		//stationary = new AlienEntity(this, 570, 159);
-		//entities.add(stationary);
-		//stationary = new AlienEntity(this, 613, 159);
-		//entities.add(stationary);
-	
 		// keep looping round til the game ends
 		while (gameRunning) {
 			// work out how long its been since the last update, this
@@ -246,12 +222,8 @@ public class Game {
 			// move this loop
 			//temp declare
 			Entity alien = null;
-			
-			
-			
 			// update our FPS counter if a second has passed since
 			// we last recorded
-			
 			
 			// Get hold of a graphics context for the accelerated 
 			// surface and blank it out
@@ -276,94 +248,120 @@ public class Game {
 				fps++;
 				
 				if (lastFpsTime >= 1000) {
-					String title = windowTitle+" (FPS: "+fps+")";
+					String title = windowTitle+" (FPS: "+fps+");   Life: " + playerLife;
 					gc.setTitle(title);
 					lastFpsTime = 0;
 					fps = 0;
 					
-					
-					//test alien
-					Random num = new Random();
-					num.nextInt(761);
-		
-					if(alienCount < 2){
-						alien = new AlienEntity(this, num.nextInt(761), num.nextInt(300));
-						entities.add(alien);
-						alienCount++;
-						//System.out.println("alien count: " + alienCount);
-					}
-					
-				}
-				
-				
-				
-				
-				
-				for (int i=0;i<entities.size();i++) {
-					Entity entity = (Entity) entities.get(i);
-					
-					entity.move(delta);
-				}
-				
-				for (int i=0;i<entities.size();i++) {
-					Entity entity = (Entity) entities.get(i);
-					gc.draw(entity);
-					//entity.draw(g);
-				}
-				
-				for (int p=0;p<entities.size();p++) {
-					for (int s=p+1;s<entities.size();s++) {
-						Entity me = (Entity) entities.get(p);
-						Entity him = (Entity) entities.get(s);
+					//if(mosquitoKills == 2){
+					//	kih.pauseGame();
+					//}
+						//test alien
+						Random num = new Random();
+						int x, y; 
 						
-						if (me.collidesWith(him)) {
-							me.collidedWith(him);
-							him.collidedWith(me);
+						if(num.nextBoolean()){
+							int minHospitalX = 60;
+							int maxHospitalX = 193;
+							int minHospitalY = 180;
+							int maxHospitalY = 250;
+							x = (int) ((int) minHospitalX + num.nextFloat() * (maxHospitalX - minHospitalX));
+							y = (int) ((int) minHospitalY + num.nextFloat() * (maxHospitalY - minHospitalY));
+						}else{
+							int minLakeX = 500;
+							int maxLakeX = 653;
+							int minLakeY = 100;
+							int maxLakeY = 180;
+							x = (int) ((int) minLakeX + num.nextFloat() * (maxLakeX - minLakeX));
+							y = (int) ((int) minLakeY + num.nextFloat() * (maxLakeY - minLakeY));
 						}
+		
+						if(alienCount < 20){
+							alien = new AlienEntity(this, x, y);
+							entities.add(alien);
+							alienCount++;
+							//System.out.println("alien count: " + alienCount);
+						}
+						
 					}
-				}
-				
-				entities.removeAll(removeList);
-				removeList.clear();
-
-				// if a game event has indicated that game logic should
-				// be resolved, cycle round every entity requesting that
-				// their personal logic should be considered.
-				if (logicRequiredThisLoop) {
+					
 					for (int i=0;i<entities.size();i++) {
 						Entity entity = (Entity) entities.get(i);
-						entity.doLogic();
+						
+						entity.move(delta);
+						
+						
+						
 					}
 					
-					logicRequiredThisLoop = false;
-				}
-				
-				for (int i=0;i<entities.size();i++) {
-					Entity entity = (Entity) entities.get(i);
-					
-					if (entity instanceof AlienEntity) {
-						entity.setVerticalMovement(50);
-						entity.setHorizontalMovement(0);
-						//entity.setHorizontalMovement(entity.getHorizontalMovement() * 1.02);
+					for (int i=0;i<entities.size();i++) {
+						Entity entity = (Entity) entities.get(i);
+						gc.draw(entity);
+						//entity.draw(g);
 					}
-				}
+					
+					for (int p=0;p<entities.size();p++) {
+						for (int s=p+1;s<entities.size();s++) {
+							Entity me = (Entity) entities.get(p);
+							Entity him = (Entity) entities.get(s);
+							
+							if (me.collidesWith(him)) {
+								me.collidedWith(him);
+								him.collidedWith(me);
+							}
+						}
+					}
+					
+					entities.removeAll(removeList);
+					removeList.clear();
+
+					// if a game event has indicated that game logic should
+					// be resolved, cycle round every entity requesting that
+					// their personal logic should be considered.
+					if (logicRequiredThisLoop) {
+						for (int i=0;i<entities.size();i++) {
+							Entity entity = (Entity) entities.get(i);
+							entity.doLogic();
+						}
+						
+						logicRequiredThisLoop = false;
+					}
+					
+					for (int i=0;i<entities.size();i++) {
+						Entity entity = (Entity) entities.get(i);
+						
+						if (entity instanceof AlienEntity) {
+							entity.setVerticalMovement(50);
+							entity.setHorizontalMovement(0);
+							//entity.setHorizontalMovement(entity.getHorizontalMovement() * 1.02);
+
+								AlienEntity newEntity = (AlienEntity) entity;
+								
+							
+						}
+					}
+					
+					ship.setHorizontalMovement(0);
+					
+					
+					//get controls from KeyInputHandler
+					movementControls();
+					
+					
+					// we want each frame to take 10 milliseconds, to do this
+					// we've recorded when we started the frame. We add 10 milliseconds
+					// to this and then factor in the current time to give 
+					// us our final value to wait for
+					SystemTimer.sleep(lastLoopTime+10-SystemTimer.getTime());
+					
 				
-				ship.setHorizontalMovement(0);
-				
-				
-				//get controls from KeyInputHandler
-				movementControls();
-				
-				
-				// we want each frame to take 10 milliseconds, to do this
-				// we've recorded when we started the frame. We add 10 milliseconds
-				// to this and then factor in the current time to give 
-				// us our final value to wait for
-				SystemTimer.sleep(lastLoopTime+10-SystemTimer.getTime());
+					
+					
 				
 			} else {
 				gc.waitForKeyPress();
-				this.initEntities();
+				//mosquitoKills++;
+				
 			}
 			
 			// cycle round drawing all the entities we have in the game
