@@ -13,9 +13,6 @@ public class ShotEntity extends Entity {
 	/** True if this shot has been "used", i.e. its hit something */
 	private boolean used = false;
 	
-	//test
-	
-	
 	/**
 	 * Create a new shot from the player
 	 * 
@@ -32,11 +29,6 @@ public class ShotEntity extends Entity {
 		this.game = game;
 		
 		dy = moveSpeed;
-		
-		//CalculationHelper test = new CalculationHelper();
-		//long testt = (long) moveSpeed;
-		//dx = moveSpeed;
-		
 	}
 
 	/**
@@ -68,13 +60,13 @@ public class ShotEntity extends Entity {
 		}
 		
 		// if we've hit an alien, kill it!
-		if (other instanceof AlienEntity) {
+		if (other instanceof MosquitoEntity) {
 			// remove the affected entities
 			game.removeEntity(this);
 			game.removeEntity(other);
 			
 			// notify the game that the alien has been killed
-			game.notifyAlienKilled();
+			game.notifyMosquitoKilled();
 			used = true;
 		}
 	}

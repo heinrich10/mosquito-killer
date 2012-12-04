@@ -54,10 +54,5 @@ public class Sprite {
 	public void draw(Graphics g,int x,int y) {
 		g.drawImage(image,x,y,null);
 		
-		//System.out.println(g.toString());
-		//Graphics2D g2d=(Graphics2D)g;
-		//g2d.rotate(0.0011);
-		//System.out.println(x + "..." + y);
-		//g2d.drawImage(image, x, y, null);
 	}
 }

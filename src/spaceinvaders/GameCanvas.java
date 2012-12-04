@@ -25,85 +25,43 @@ public class GameCanvas extends Canvas {
 	JFrame container = null;
 	
 	private String message = "";
+	Sprite sprite = null;
 	
 	public GameCanvas(KeyInputHandler kih){
-		container = new JFrame("Space Invaders 102");
+		container = new JFrame("Mosquito Killer");
 		
-		// get hold the content of the frame and set up the resolution of the game
 		JPanel panel = (JPanel) container.getContentPane();
 		panel.setPreferredSize(new Dimension(800,800));
 		panel.setLayout(null);
 
-		//this.setBackground(Color.CYAN);
-		// setup our canvas size and put it into the content of the frame
 		setBounds(0,0,800,800);
 		panel.add(this);
 		
-		
-		
-		// Tell AWT not to bother repainting our canvas since we're
-		// going to do that our self in accelerated mode
 		setIgnoreRepaint(true);
 		
-		// finally make the window visible 
 		container.pack();
 		container.setResizable(false);
 		container.setVisible(true);
 		
-		// add a listener to respond to the user closing the window. If they
-		// do we'd like to exit the game
 		container.addWindowListener(new WindowAdapter() {
 			public void windowClosing(WindowEvent e) {
 				System.exit(0);
 			}
 		});
 		
-		// add a key input system (defined below) to our canvas
-		// so we can respond to key pressed
-		//addKeyListener(new KeyInputHandler());
 		addKeyListener(kih);
 		
-		// request the focus so key events come to us
 		requestFocus();
 
-		// create the buffering strategy which will allow AWT
-		// to manage our accelerated graphics
 		createBufferStrategy(2);
 		strategy = getBufferStrategy();
 		
-		// initialise the entities in our game so there's something
-		// to see at startup
-		//initEntities();
+		sprite = SpriteStore.get().getSprite("sprites/copy.jpg");
+		
 	}
 	public void updateGraphics(){
-		
-		//test
-		//img = ImageIO.read(new File("strawberry.jpg"))
-		
-		BufferedImage img = null;
-		try {
-			img = ImageIO.read(new File("C://Users//Heinrich Chan//workspace//CSC504C//src//sprites//copy.jpg"));
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		
-		
-				
-		//Graphics2D g2 = null;
-		//g2 = img.createGraphics();
-		//g.drawImage(img, null, 0, 0);			
-		
-
-        
 		g = (Graphics2D) strategy.getDrawGraphics();
-		//g.drawLine(0, 0, 50, 50);
-		//g = img.createGraphics();
-		//g.drawImage(img, 0, 0, null);
-		//g.setColor(Color.GREEN);
-		//g.fillRect(0,0,800,800);
-		g.drawImage(img, null, 0, 0);
-		//g.draw
+		sprite.draw(g, 0, 0);
 	}
 	public void draw(Entity entity) {
 		// TODO Auto-generated method stub
@@ -130,6 +88,10 @@ public class GameCanvas extends Canvas {
 	
 	public void setMessage(String message){
 		this.message = message;
+	}
+	
+	public void rainDrops(Sprite sprite, int x, int y){
+		sprite.draw(g, x, y);
 	}
 	
 }
