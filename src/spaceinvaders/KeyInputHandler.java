@@ -12,6 +12,7 @@ public class KeyInputHandler extends java.awt.event.KeyAdapter {
 	private boolean leftPressed = false;
 	private boolean rightPressed = false;
 	private boolean firePressed = false;
+	private boolean saveGame = false;
 	
 	public void keyPressed(KeyEvent e) {
 		if (e.getKeyCode() == KeyEvent.VK_LEFT) {
@@ -42,6 +43,10 @@ public class KeyInputHandler extends java.awt.event.KeyAdapter {
 		if (e.getKeyChar() == 27) {
 			System.exit(0);
 		}
+		if (e.getKeyChar() == 'x') {
+			this.pauseGame();
+			saveGame = true;
+		}
 	}
 	
 	public boolean leftPressed(){
@@ -62,6 +67,10 @@ public class KeyInputHandler extends java.awt.event.KeyAdapter {
 	
 	public void pauseGame(){
 		pause = true;
+	}
+	
+	public boolean saveGame(){
+		return saveGame;
 	}
 	
 }

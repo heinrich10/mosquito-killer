@@ -3,6 +3,7 @@ package spaceinvaders;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Image;
+import java.io.Serializable;
 
 /**
  * A sprite to be displayed on the screen. Note that a sprite
@@ -13,7 +14,7 @@ import java.awt.Image;
  * 
  * @author Kevin Glass
  */
-public class Sprite {
+public class Sprite{
 	/** The image to be drawn for this sprite */
 	private Image image;
 	

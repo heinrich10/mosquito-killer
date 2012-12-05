@@ -6,6 +6,7 @@ import java.awt.Image;
 import java.awt.Transparency;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
+import java.io.Serializable;
 import java.net.URL;
 import java.util.HashMap;
 
@@ -21,7 +22,7 @@ import javax.imageio.ImageIO;
  * <p>
  * @author Kevin Glass
  */
-public class SpriteStore {
+public class SpriteStore{
 	/** The single instance of this class */
 	private static SpriteStore single = new SpriteStore();
 	

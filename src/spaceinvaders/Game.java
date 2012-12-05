@@ -1,42 +1,45 @@
 package spaceinvaders;
 
-import java.awt.image.BufferStrategy;
 import java.util.ArrayList;
 import java.util.Random;
 
-public class Game {
+public class Game{
 	
-	private boolean gameRunning = true;
+	public boolean gameRunning = true;
 	private ArrayList entities = new ArrayList();
 	private ArrayList removeList = new ArrayList();
 	private PlayerEntity player;
 	private double moveSpeed = 300;
 	private long lastFire = 0;
 	private long firingInterval = 500;
-	private int mosquitoCount = 0;
-	private int playerLife = 20;
-	private int mosquitoKills = 0;
 	private boolean newGame = true;
 	private long lastFpsTime;
 	private int fps;
-	private String windowTitle = "Space Invaders 102";
+	private String windowTitle = "";
 	private KeyInputHandler kih = null;
     private GameCanvas gc = null;
     private Story popUp = null;
     private StoryHelper sh = null;
+    private AttributeStore attribute = null; 
+    private MainMenu mm = null;
     
     private Sprite[] sp = new Sprite[100];
     
 	public Game() {
 		//create KeyInputHandler and pass it to GameCanvas
-    	kih = new KeyInputHandler();
+		kih = new KeyInputHandler();
     	gc = new GameCanvas(kih);
     	popUp = new Story("");
     	sh = new StoryHelper();
+    	mm = new MainMenu();
+    	mm.setVisible(true);
+    	player = new PlayerEntity(this,"sprites/rockman2.png",370,550);
     	
     	for(int i = 1; i < 100; i++){
     		sp[i] = SpriteStore.get().getSprite("sprites/rain.gif");
     	}
+    	
+    	
 	}
 	
 	public void gameLoop() {
@@ -56,23 +59,24 @@ public class Game {
 				fps++;
 				
 				if (lastFpsTime >= 1000) {
-					String title = windowTitle+" (FPS: "+fps+");   Life: " + playerLife;
+					String title = windowTitle+" (FPS: "+fps+");   Life: " + attribute.playerLife();
 					gc.setTitle(title);
 					lastFpsTime = 0;
 					fps = 0;
 					DataStore ds = new DataStore();
 					int limit;
-					if(mosquitoKills <= 10){
+					if(attribute.mosquitoKills() <= 10){
 						ds = stageOneSpawn(ds);
 						limit = 20;
 						
-						if(mosquitoKills == 10){
+						if(attribute.mosquitoKills() == 10){
 							kih.pauseGame();
 							popUp.setText(sh.stageTwo());
 							popUp.setVisible(true);
 							
+							
 						}
-					} else if(mosquitoKills > 10 && mosquitoKills < 25){
+					} else if(attribute.mosquitoKills() > 10 && attribute.mosquitoKills() <= 25){
 						ds = stageOneSpawn(ds);
 						limit = 10;
 						
@@ -82,7 +86,7 @@ public class Game {
 							
 				    		gc.rainDrops(sp[i], num.nextInt(800), num.nextInt(800));
 				    	}
-						if(mosquitoKills == 25){
+						if(attribute.mosquitoKills() == 25){
 							kih.pauseGame();
 							popUp.setText(sh.stageThree());
 							popUp.setVisible(true);
@@ -91,12 +95,11 @@ public class Game {
 						ds = stageThreeSpawn(ds);
 						limit = 35;
 					}
-					System.out.println(mosquitoKills);
-		
-					if(mosquitoCount < limit){
+				
+					if(attribute.mosquitoCount() < limit){
 						alien = new MosquitoEntity(this, ds.getX(), ds.getY());
 						entities.add(alien);
-						mosquitoCount++;
+						attribute.mosquitoSpawn();
 					}
 						
 				}
@@ -137,13 +140,47 @@ public class Game {
 					gc.waitForKeyPress();
 					
 					if(newGame){
-						popUp.setText(sh.stageOne());
-						popUp.setVisible(true);
-					    startGame();
+						
+						if(mm.gameStarted()){
+							popUp.setText(sh.stageOne());
+							popUp.setVisible(true);
+							startGame();
+						}
+						
+						
+					    
+					}
+					
+					if(mm.loadGame()){
+						
+						SaveLoadHelper slh = new SaveLoadHelper();
+						
+						ArrayList load = null;
+						load = (ArrayList) slh.loadFileEntity();
+						
+						for(int i = 0; i < load.size(); i++){
+							DataStore loadObject = (DataStore) load.get(i);
+							if(loadObject.getType().compareTo("mosquito") == 0){
+								MosquitoEntity mos = new MosquitoEntity(this, loadObject.getX(), loadObject.getY());
+								entities.add(i, mos);
+							}else if(loadObject.getType().compareTo("player") == 0){
+								player = null;
+								player = new PlayerEntity(this, "sprites/rockman2.png", loadObject.getX(), loadObject.getY());
+								entities.add(i, player);
+							}
+									
+									
+							
+						}
+						System.out.println("load");
+						attribute = (AttributeStore) slh.loadFileAtrribute();
+						newGame = false;
+						mm.dontLoad();
+//						
 					}
 					
 					if(popUp.isOk()){
-						mosquitoKills++;
+						attribute.mosquitoKill();
 						popUp.reinit();
 					}
 					lastLoopTime = SystemTimer.getTime();
@@ -160,15 +197,15 @@ public class Game {
 		entities.clear();
 		initEntities();
 		newGame = false;
+	
 	}
 	
 	private void initEntities() {
 		entities.clear();
 		player = new PlayerEntity(this,"sprites/rockman2.png",370,550);
 		entities.add(player);
-		mosquitoCount = 0;
-		playerLife = 20;
-		mosquitoKills = 0;
+		attribute = new AttributeStore();
+		
 	}
 	
 
@@ -189,27 +226,26 @@ public class Game {
 	}
 	
 	public void notifyMosquitoKilled() {
-		mosquitoCount--;
-		mosquitoKills++;
+		attribute.mosquitoKill();
 		
-		if (mosquitoCount == 0) {
+		if (attribute.mosquitoCount() == 0) {
 			notifyWin();
 		}
 		
 	}
 	
 	public void mosquitoBreach(Entity entity){
-		mosquitoCount--;
-		playerLife--;
+		attribute.mosquitoBreach();
+		
 		
 		removeEntity(entity);
-		if(playerLife == 0){
+		if(attribute.noLife()){
 			notifyDeath();
 		}
 	}
 	
 	public void mosquitoOutOfBounds(Entity entity){
-		mosquitoCount--;
+		attribute.mosquitoOutOfBounds();
 		removeEntity(entity);
 	}
 	
@@ -283,11 +319,37 @@ public class Game {
 		}else{
 			player.setStand();
 		}
-	}
-
-	public static void main(String[] args){
-		Game g = new Game();
 		
+		if(kih.saveGame()){
+			SaveLoadHelper slh = new SaveLoadHelper();
+			ArrayList save = new ArrayList(entities.size());
+			for(int i = 0; i < entities.size(); i++){
+				Entity tempEntity = null;
+				String name = "";
+				tempEntity = (Entity) entities.get(i);
+				if(tempEntity instanceof MosquitoEntity){
+					name = "mosquito";
+				}else if(tempEntity instanceof PlayerEntity){
+					name = "player";
+				}
+				entities.remove(i);
+				DataStore saveObject = new DataStore(tempEntity.getX(),tempEntity.getY(), name);
+				save.add(i, saveObject);
+				
+			}
+					
+			//slh.saveFile(this);
+			slh.saveFileEntities(save);
+			slh.saveFileAttributes(attribute);
+			System.out.println("save");
+			System.exit(0);
+		}
+	}
+	
+	public static void main(String args[]) {
+		Game g = new Game();
 		g.gameLoop();
 	}
+
+	
 }

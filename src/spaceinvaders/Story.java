@@ -19,6 +19,7 @@ public class Story extends JFrame{
     public Story(String text) {
     	
         initComponents();
+       
         
     }
 

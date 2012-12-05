@@ -2,6 +2,7 @@ package spaceinvaders;
 
 import java.awt.Graphics;
 import java.awt.Rectangle;
+import java.io.Serializable;
 
 /**
  * An entity represents any element that appears in the game. The
@@ -16,7 +17,7 @@ import java.awt.Rectangle;
  * 
  * @author Kevin Glass
  */
-public abstract class Entity {
+public abstract class Entity{
 	/** The current x location of this entity */ 
 	protected double x;
 	/** The current y location of this entity */
